@@ -563,6 +563,7 @@ void bt_shell_prompt_input(const char *label, const char *msg,
 			bt_shell_prompt_input_func func, void *user_data)
 {
 	char *str;
+	int len;
 
 	if (!data.init || data.mode)
 		return;
@@ -575,7 +576,13 @@ void bt_shell_prompt_input(const char *label, const char *msg,
 	data.saved_prompt = true;
 	data.saved_func = func;
 	data.saved_user_data = user_data;
-	asprintf(&str, "[%s] %s ", label, msg);
+	len = asprintf(&str, "[%s] %s ", label, msg);
+	if (len < 0) {
+		str = NULL;
+		free(msg); /* Either corrupted event or no memory */
+		return;
+	}
+
 
 	rl_save_prompt();
 	bt_shell_set_prompt(str);
